@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import { api } from 'src/boot/axios'
 import { LocalStorage } from 'quasar'
 import { useRouter } from 'vue-router'
+import { useErrorHandler } from 'src/composables/errorHandler'
 
+const { showNotification } = useErrorHandler()
 const router = useRouter()
 const myForm = ref(null)
 const isPwd = ref(true)
@@ -23,12 +25,10 @@ function onSubmit() {
           router.push({ name: 'dashboard' })
         })
         .catch(function (error) {
-          console.log(error)
+          showNotification(error.response.data.message, 'error')
         })
     } else {
-      console.log('error')
-      // oh no, user has filled in
-      // at least one invalid value
+      showNotification('Please fill out the login form', 'error')
     }
   })
 }

@@ -6,9 +6,10 @@ import { useRouter } from 'vue-router'
 import BlogForm from 'src/components/BlogForm.vue'
 import BlogFormEdit from 'src/components/BlogFormEdit.vue'
 import PostPreview from 'src/components/PostPreview.vue'
+import { useErrorHandler } from 'src/composables/errorHandler'
 
 const $q = useQuasar()
-
+const { showNotification } = useErrorHandler()
 const columns = [
   {
     name: 'title',
@@ -66,7 +67,8 @@ function fetchData() {
     .then(function (response) {
       rows.value = response.data.blog_posts
     })
-    .catch(function () {
+    .catch(function (error) {
+      showNotification(error.response.data.message, 'error')
       router.push({ name: 'login' })
     })
 }
@@ -83,11 +85,12 @@ function archivePost(id) {
         },
       },
     )
-    .then(function () {
+    .then(function (response) {
+      showNotification(response.data.message, 'success')
       fetchData()
     })
     .catch(function (error) {
-      console.log(error)
+      showNotification(error.response.data.message, 'error')
     })
 }
 
@@ -129,15 +132,17 @@ function updateStatus(data) {
         },
       },
     )
-    .then(function () {
+    .then(function (response) {
+      showNotification(response.data.message, 'success')
       fetchData()
     })
     .catch(function (error) {
-      console.log(error)
+      showNotification(error.response.data.message, 'error')
     })
 }
 
 function logout() {
+  showNotification('Successfully logged out', 'success')
   LocalStorage.clear()
   window.location.href = 'http://127.0.0.1:8000/logout'
   router.push({ name: 'login' })

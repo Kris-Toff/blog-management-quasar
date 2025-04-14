@@ -2,9 +2,10 @@
 import { ref, watch } from 'vue'
 import { api } from 'src/boot/axios'
 import { LocalStorage } from 'quasar'
+import { useErrorHandler } from 'src/composables/errorHandler'
 
 const props = defineProps({ data: {}, modelValue: Boolean })
-
+const { showNotification } = useErrorHandler()
 const myFormEdit = ref(null)
 const title = ref('')
 const content = ref('')
@@ -32,15 +33,16 @@ function onSubmit() {
             },
           },
         )
-        .then(function () {
+        .then(function (response) {
+          showNotification(response.data.message, 'success')
           dialog.value = false
           emit('onEditOk')
         })
         .catch(function (error) {
-          console.log(error)
+          showNotification(error.response.data.message, 'error')
         })
     } else {
-      console.log('error')
+      showNotification('Please fill out the form', 'error')
       // oh no, user has filled in
       // at least one invalid value
     }

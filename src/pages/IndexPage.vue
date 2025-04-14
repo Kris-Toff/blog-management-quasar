@@ -1,18 +1,19 @@
 <script setup>
 import { api } from 'src/boot/axios'
 import { ref } from 'vue'
+import { useErrorHandler } from 'src/composables/errorHandler'
 
 const posts = ref([])
+const { showNotification } = useErrorHandler
 
 function fetchData() {
   api
     .get('/blog-posts/published')
     .then(function (response) {
       posts.value = response.data.blog_posts
-      // rows.value = response.data.blog_posts
     })
-    .catch(function () {
-      // router.push({ name: 'login' })
+    .catch(function (error) {
+      showNotification(error.response.data.message, 'error')
     })
 }
 

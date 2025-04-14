@@ -2,12 +2,14 @@
 import { ref } from 'vue'
 import { api } from 'src/boot/axios'
 import { LocalStorage } from 'quasar'
+import { useErrorHandler } from 'src/composables/errorHandler'
 
 const myForm = ref(null)
 const isPwd = ref(true)
 const email = ref('')
 const password = ref('')
 const name = ref('')
+const { showNotification } = useErrorHandler()
 
 function onSubmit() {
   myForm.value.validate().then((success) => {
@@ -22,12 +24,14 @@ function onSubmit() {
           LocalStorage.set('token', response.token)
         })
         .catch(function (error) {
-          console.log(error)
+          for (let key in error.response.data) {
+            error.response.data[key].forEach((el) => {
+              showNotification(el, 'error')
+            })
+          }
         })
     } else {
-      console.log('error')
-      // oh no, user has filled in
-      // at least one invalid value
+      showNotification('Please fill out the registration form', 'error')
     }
   })
 }
@@ -95,7 +99,7 @@ function reset() {
           </q-input>
 
           <div>
-            <q-btn label="Login" type="submit" color="primary" class="full-width" />
+            <q-btn label="Register" type="submit" color="primary" class="full-width" />
           </div>
         </q-form>
       </div>
