@@ -137,6 +137,12 @@ function updateStatus(data) {
     })
 }
 
+function logout() {
+  LocalStorage.clear()
+  window.location.href = 'http://127.0.0.1:8000/logout'
+  router.push({ name: 'login' })
+}
+
 const statusLabel = (v) =>
   computed(() => {
     return v == 'Publish' ? 'Hide' : 'Publish'
@@ -152,8 +158,9 @@ fetchData()
     <blog-form-edit v-model="editDialog" :data="dialogData" @onEditOk="fetchData" />
     <post-preview v-model="previewDialog" :data="dialogData" />
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 flex justify-between">
         <q-btn label="Create new post" color="primary" @click="addDialog = true" />
+        <q-btn label="Logout" color="primary" @click="logout" />
       </div>
       <div class="col-12 q-mt-md">
         <q-table
