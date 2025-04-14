@@ -1,10 +1,12 @@
 <script setup>
 import { ref } from 'vue'
 import { api } from 'src/boot/axios'
-import { LocalStorage } from 'quasar'
+import { LocalStorage, useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import BlogForm from 'src/components/BlogForm.vue'
 import BlogFormEdit from 'src/components/BlogFormEdit.vue'
+
+const $q = useQuasar()
 
 const columns = [
   {
@@ -67,9 +69,43 @@ function fetchData() {
     })
 }
 
+function archivePost(id) {
+  api
+    .post(
+      '/blog-post/archive/' + id,
+      {},
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer ' + LocalStorage.getItem('token'),
+        },
+      },
+    )
+    .then(function () {
+      fetchData()
+    })
+    .catch(function (error) {
+      console.log(error)
+    })
+}
+
 function toggleEditDialog(data) {
   dialogData.value = data
   editDialog.value = true
+}
+
+function confirmArchive(id) {
+  $q.dialog({
+    title: 'Confirm',
+    message: 'Are you sure you want to archive this post?',
+    ok: 'Yes',
+    cancel: 'No',
+  })
+    .onOk(() => {
+      archivePost(id)
+    })
+    .onCancel(() => {})
+    .onDismiss(() => {})
 }
 
 // fetch initial data
@@ -113,7 +149,7 @@ fetchData()
                       <q-item clickable v-close-popup>
                         <q-item-section>Preview</q-item-section>
                       </q-item>
-                      <q-item clickable v-close-popup>
+                      <q-item clickable v-close-popup @click="confirmArchive(props.row.id)">
                         <q-item-section>Archive</q-item-section>
                       </q-item>
                     </q-list>
