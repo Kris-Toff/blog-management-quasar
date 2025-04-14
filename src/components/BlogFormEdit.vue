@@ -1,24 +1,18 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { api } from 'src/boot/axios'
 import { LocalStorage } from 'quasar'
 
-const props = defineProps(['data'])
+const props = defineProps({ data: {}, modelValue: Boolean })
 
 const myFormEdit = ref(null)
 const title = ref('')
 const content = ref('')
-const status = ref('')
+const status = ref('Publish')
 const options = ref(['Publish', 'Hide'])
-const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
+const dialog = ref(props.modelValue)
 
-import { useDialogPluginComponent } from 'quasar'
-
-defineEmits([
-  // REQUIRED; need to specify some events that your
-  // component will emit through useDialogPluginComponent()
-  ...useDialogPluginComponent.emits,
-])
+const emit = defineEmits(['onEditOk', 'update:modelValue'])
 
 function onSubmit() {
   myFormEdit.value.validate().then((success) => {
@@ -39,7 +33,8 @@ function onSubmit() {
           },
         )
         .then(function () {
-          onDialogOK()
+          dialog.value = false
+          emit('onEditOk')
         })
         .catch(function (error) {
           console.log(error)
@@ -57,18 +52,42 @@ function reset() {
   myFormEdit.value.resetValidation()
 }
 
-if (props.data) {
-  title.value = props.data.title
-  content.value = props.data.content
-  status.value = props.data.status
+function resetInputFields() {
+  title.value = ''
+  content.value = ''
+  status.value = 'Publish'
 }
+
+watch(
+  () => props.modelValue,
+  (v) => {
+    dialog.value = v
+
+    if (!v) {
+      resetInputFields()
+    }
+  },
+)
+
+watch(
+  () => props.data,
+  (v) => {
+    title.value = v.title
+    content.value = v.content
+    status.value = v.status
+  },
+)
+
+watch(dialog, (v) => {
+  emit('update:modelValue', v)
+})
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog v-model="dialog">
     <q-card class="q-dialog-plugin" style="padding: 10px; min-width: 400px">
       <q-form @submit="onSubmit" @reset="reset" ref="myFormEdit" class="q-gutter-md">
-        <h4>Edit blog post</h4>
+        <h4>Edit Blog Post</h4>
         <q-input
           filled
           v-model="title"

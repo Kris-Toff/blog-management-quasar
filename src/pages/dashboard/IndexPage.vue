@@ -5,7 +5,6 @@ import { LocalStorage } from 'quasar'
 import { useRouter } from 'vue-router'
 import BlogForm from 'src/components/BlogForm.vue'
 import BlogFormEdit from 'src/components/BlogFormEdit.vue'
-import { useQuasar } from 'quasar'
 
 const columns = [
   {
@@ -42,44 +41,14 @@ const columns = [
 
 const rows = ref([])
 const addDialog = ref(false)
+const editDialog = ref(false)
+const dialogData = ref({
+  title: 'adasd',
+  content: 'dfgdfg',
+  status: 'Publish',
+})
 
 const router = useRouter()
-const $q = useQuasar()
-
-// function toggleDialog() {
-//   $q.dialog({
-//     component: BlogForm,
-//   })
-//     .onOk(() => {
-//       // console.log('OK')
-//     })
-//     .onCancel(() => {
-//       // console.log('Cancel')
-//     })
-//     .onDismiss(() => {
-//       // console.log('I am triggered on both OK and Cancel')
-//     })
-// }
-
-function toggleEditDialog(data = {}) {
-  $q.dialog({
-    component: BlogFormEdit,
-
-    componentProps: {
-      data: data,
-    },
-  })
-    .onOk(() => {
-      // refresh
-      fetchData()
-    })
-    .onCancel(() => {
-      // console.log('Cancel')
-    })
-    .onDismiss(() => {
-      // console.log('I am triggered on both OK and Cancel')
-    })
-}
 
 function fetchData() {
   api
@@ -97,6 +66,11 @@ function fetchData() {
     })
 }
 
+function toggleEditDialog(data) {
+  dialogData.value = data
+  editDialog.value = true
+}
+
 // fetch initial data
 fetchData()
 </script>
@@ -104,6 +78,7 @@ fetchData()
 <template>
   <q-page class="flex flex-center">
     <blog-form v-model="addDialog" @onOk="fetchData" />
+    <blog-form-edit v-model="editDialog" :data="dialogData" @onEditOk="fetchData" />
     <div class="row">
       <div class="col-12">
         <q-btn label="Create new post" color="primary" @click="addDialog = true" />
