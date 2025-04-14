@@ -36,6 +36,7 @@ const columns = [
     field: 'action',
     required: true,
     label: 'Action',
+    align: 'center',
   },
 ]
 
@@ -83,22 +84,20 @@ fetchData()
       <div class="col-12">
         <q-btn label="Create new post" color="primary" @click="addDialog = true" />
       </div>
-      <div class="col-12">
+      <div class="col-12 q-mt-md">
         <q-table flat bordered title="Blog Posts" :rows="rows" :columns="columns" row-key="title">
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td key="title" :props="props">
-                <div>
-                  {{ props.row.title }}
-                </div>
+                {{ props.row.title }}
               </q-td>
               <q-td key="content" :props="props">
                 {{ props.row.content }}
               </q-td>
-              <q-td key="status">
+              <q-td key="status" :props="props">
                 {{ props.row.status }}
               </q-td>
-              <q-td key="created_by">
+              <q-td key="created_by" :props="props">
                 {{ props.row.created_by }}
               </q-td>
               <q-td key="action" :props="props">
