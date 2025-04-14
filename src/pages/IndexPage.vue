@@ -1,7 +1,49 @@
-<template>
-  <q-page class="flex flex-center"> </q-page>
-</template>
-
 <script setup>
-//
+import { api } from 'src/boot/axios'
+import { ref } from 'vue'
+
+const posts = ref([])
+
+function fetchData() {
+  api
+    .get('/blog-posts/published')
+    .then(function (response) {
+      posts.value = response.data.blog_posts
+      // rows.value = response.data.blog_posts
+    })
+    .catch(function () {
+      // router.push({ name: 'login' })
+    })
+}
+
+fetchData()
 </script>
+
+<template>
+  <q-page class="flex content-start justify-center">
+    <div class="row">
+      <div class="col-12">
+        <h4>Posts</h4>
+      </div>
+      <div class="col-12">
+        <q-card
+          class="my-card bg-primary text-white"
+          style="min-width: 400px"
+          v-for="post in posts"
+          :key="post.id"
+        >
+          <q-card-section>
+            <div class="text-h6">{{ post.title }}</div>
+            <div class="text-subtitle2">by {{ post.created_by }}</div>
+          </q-card-section>
+
+          <q-separator dark />
+
+          <q-card-section>
+            {{ post.content }}
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
+  </q-page>
+</template>

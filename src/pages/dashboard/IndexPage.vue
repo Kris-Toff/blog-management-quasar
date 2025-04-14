@@ -153,7 +153,7 @@ fetchData()
 </script>
 
 <template>
-  <q-page class="flex flex-center">
+  <q-page class="flex content-start justify-center q-mt-md">
     <blog-form v-model="addDialog" @onOk="fetchData" />
     <blog-form-edit v-model="editDialog" :data="dialogData" @onEditOk="fetchData" />
     <post-preview v-model="previewDialog" :data="dialogData" />
