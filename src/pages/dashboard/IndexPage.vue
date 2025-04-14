@@ -41,24 +41,25 @@ const columns = [
 ]
 
 const rows = ref([])
+const addDialog = ref(false)
 
 const router = useRouter()
 const $q = useQuasar()
 
-function toggleDialog() {
-  $q.dialog({
-    component: BlogForm,
-  })
-    .onOk(() => {
-      // console.log('OK')
-    })
-    .onCancel(() => {
-      // console.log('Cancel')
-    })
-    .onDismiss(() => {
-      // console.log('I am triggered on both OK and Cancel')
-    })
-}
+// function toggleDialog() {
+//   $q.dialog({
+//     component: BlogForm,
+//   })
+//     .onOk(() => {
+//       // console.log('OK')
+//     })
+//     .onCancel(() => {
+//       // console.log('Cancel')
+//     })
+//     .onDismiss(() => {
+//       // console.log('I am triggered on both OK and Cancel')
+//     })
+// }
 
 function toggleEditDialog(data = {}) {
   $q.dialog({
@@ -69,6 +70,7 @@ function toggleEditDialog(data = {}) {
     },
   })
     .onOk(() => {
+      // refresh
       fetchData()
     })
     .onCancel(() => {
@@ -95,14 +97,16 @@ function fetchData() {
     })
 }
 
+// fetch initial data
 fetchData()
 </script>
 
 <template>
   <q-page class="flex flex-center">
+    <blog-form v-model="addDialog" @onOk="fetchData" />
     <div class="row">
       <div class="col-12">
-        <q-btn label="Add" color="primary" @click="toggleDialog" />
+        <q-btn label="Create new post" color="primary" @click="addDialog = true" />
       </div>
       <div class="col-12">
         <q-table flat bordered title="Blog Posts" :rows="rows" :columns="columns" row-key="title">

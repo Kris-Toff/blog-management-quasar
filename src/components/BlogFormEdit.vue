@@ -68,6 +68,7 @@ if (props.data) {
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="padding: 10px; min-width: 400px">
       <q-form @submit="onSubmit" @reset="reset" ref="myFormEdit" class="q-gutter-md">
+        <h4>Edit blog post</h4>
         <q-input
           filled
           v-model="title"

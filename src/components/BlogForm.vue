@@ -1,22 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { api } from 'src/boot/axios'
 import { LocalStorage } from 'quasar'
+
+const props = defineProps({
+  modelValue: Boolean,
+})
 
 const myForm = ref(null)
 const title = ref('')
 const content = ref('')
 const status = ref('Publish')
 const options = ref(['Publish', 'Hide'])
-const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
+const dialog = ref(props.modelValue)
 
-import { useDialogPluginComponent } from 'quasar'
-
-defineEmits([
-  // REQUIRED; need to specify some events that your
-  // component will emit through useDialogPluginComponent()
-  ...useDialogPluginComponent.emits,
-])
+const emit = defineEmits(['onOk', 'update:modelValue'])
 
 function onSubmit() {
   myForm.value.validate().then((success) => {
@@ -37,15 +35,14 @@ function onSubmit() {
           },
         )
         .then(function () {
-          onDialogOK()
+          dialog.value = false
+          emit('onOk')
         })
         .catch(function (error) {
           console.log(error)
         })
     } else {
       console.log('error')
-      // oh no, user has filled in
-      // at least one invalid value
     }
   })
 }
@@ -54,12 +51,34 @@ function onSubmit() {
 function reset() {
   myForm.value.resetValidation()
 }
+
+function resetInputFields() {
+  title.value = ''
+  content.value = ''
+  status.value = 'Publish'
+}
+
+watch(
+  () => props.modelValue,
+  (v) => {
+    dialog.value = v
+
+    if (!v) {
+      resetInputFields()
+    }
+  },
+)
+
+watch(dialog, (v) => {
+  emit('update:modelValue', v)
+})
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog v-model="dialog">
     <q-card class="q-dialog-plugin" style="padding: 10px; min-width: 400px">
       <q-form @submit="onSubmit" @reset="reset" ref="myForm" class="q-gutter-md">
+        <h4>Create Blog Post</h4>
         <q-input
           filled
           v-model="title"
