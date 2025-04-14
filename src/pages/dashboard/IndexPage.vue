@@ -1,10 +1,11 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { api } from 'src/boot/axios'
 import { LocalStorage, useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import BlogForm from 'src/components/BlogForm.vue'
 import BlogFormEdit from 'src/components/BlogFormEdit.vue'
+import PostPreview from 'src/components/PostPreview.vue'
 
 const $q = useQuasar()
 
@@ -45,6 +46,7 @@ const columns = [
 const rows = ref([])
 const addDialog = ref(false)
 const editDialog = ref(false)
+const previewDialog = ref(false)
 const dialogData = ref({
   title: 'adasd',
   content: 'dfgdfg',
@@ -94,6 +96,11 @@ function toggleEditDialog(data) {
   editDialog.value = true
 }
 
+function togglePreviewDialog(data) {
+  dialogData.value = data
+  previewDialog.value = true
+}
+
 function confirmArchive(id) {
   $q.dialog({
     title: 'Confirm',
@@ -108,6 +115,33 @@ function confirmArchive(id) {
     .onDismiss(() => {})
 }
 
+function updateStatus(data) {
+  api
+    .put(
+      '/blog-post/update-status/' + data.id,
+      {
+        status: data.status == 'Publish' ? 'Hide' : 'Publish',
+      },
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer ' + LocalStorage.getItem('token'),
+        },
+      },
+    )
+    .then(function () {
+      fetchData()
+    })
+    .catch(function (error) {
+      console.log(error)
+    })
+}
+
+const statusLabel = (v) =>
+  computed(() => {
+    return v == 'Publish' ? 'Hide' : 'Publish'
+  })
+
 // fetch initial data
 fetchData()
 </script>
@@ -116,18 +150,27 @@ fetchData()
   <q-page class="flex flex-center">
     <blog-form v-model="addDialog" @onOk="fetchData" />
     <blog-form-edit v-model="editDialog" :data="dialogData" @onEditOk="fetchData" />
+    <post-preview v-model="previewDialog" :data="dialogData" />
     <div class="row">
       <div class="col-12">
         <q-btn label="Create new post" color="primary" @click="addDialog = true" />
       </div>
       <div class="col-12 q-mt-md">
-        <q-table flat bordered title="Blog Posts" :rows="rows" :columns="columns" row-key="title">
+        <q-table
+          flat
+          bordered
+          title="Blog Posts"
+          :rows="rows"
+          :columns="columns"
+          row-key="title"
+          style="max-width: 800px"
+        >
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td key="title" :props="props">
                 {{ props.row.title }}
               </q-td>
-              <q-td key="content" :props="props">
+              <q-td key="content" :props="props" class="ellipsis" style="max-width: 100px">
                 {{ props.row.content }}
               </q-td>
               <q-td key="status" :props="props">
@@ -143,10 +186,12 @@ fetchData()
                       <q-item clickable v-close-popup @click="toggleEditDialog(props.row)">
                         <q-item-section>Edit</q-item-section>
                       </q-item>
-                      <q-item clickable v-close-popup>
-                        <q-item-section>Change Status</q-item-section>
+                      <q-item clickable v-close-popup @click="updateStatus(props.row)">
+                        <q-item-section
+                          >Change Status to {{ statusLabel(props.row.status) }}</q-item-section
+                        >
                       </q-item>
-                      <q-item clickable v-close-popup>
+                      <q-item clickable v-close-popup @click="togglePreviewDialog(props.row)">
                         <q-item-section>Preview</q-item-section>
                       </q-item>
                       <q-item clickable v-close-popup @click="confirmArchive(props.row.id)">
