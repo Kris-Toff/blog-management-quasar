@@ -26,7 +26,7 @@ fetchData()
       <div class="col-12">
         <h4>Posts</h4>
       </div>
-      <div class="col-12">
+      <div class="col-12 q-gutter-md">
         <q-card
           class="my-card bg-primary text-white"
           style="min-width: 400px"

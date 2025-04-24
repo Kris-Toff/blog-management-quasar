@@ -16,12 +16,15 @@ const columns = [
     field: 'title',
     required: true,
     label: 'Title',
+    align: 'left',
+    sortable: true,
   },
   {
     name: 'content',
     field: 'content',
     required: true,
     label: 'Content',
+    align: 'left',
   },
   {
     name: 'status',
@@ -48,6 +51,8 @@ const rows = ref([])
 const addDialog = ref(false)
 const editDialog = ref(false)
 const previewDialog = ref(false)
+const loading = ref(false)
+const filter = ref('')
 const dialogData = ref({
   title: 'adasd',
   content: 'dfgdfg',
@@ -57,6 +62,8 @@ const dialogData = ref({
 const router = useRouter()
 
 function fetchData() {
+  loading.value = true
+
   api
     .get('/blog-posts', {
       headers: {
@@ -66,8 +73,10 @@ function fetchData() {
     })
     .then(function (response) {
       rows.value = response.data.blog_posts
+      loading.value = false
     })
     .catch(function (error) {
+      loading.value = false
       showNotification(error.response.data.message, 'error')
       router.push({ name: 'login' })
     })
@@ -142,10 +151,36 @@ function updateStatus(data) {
 }
 
 function logout() {
-  showNotification('Successfully logged out', 'success')
-  LocalStorage.clear()
-  window.location.href = 'http://127.0.0.1:8000/logout'
-  router.push({ name: 'login' })
+  api
+    .post(
+      '/logout',
+      {},
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer ' + LocalStorage.getItem('token'),
+        },
+      },
+    )
+    .then(function (response) {
+      LocalStorage.clear()
+      showNotification(response.data.message, 'success')
+      window.location.href = response.data.redirect_url
+    })
+    .catch(function (error) {
+      showNotification(error.response.data.message, 'error')
+    })
+}
+
+function filterByTitle(rows, filter, cols, getCellValue) {
+  const term = filter.toLowerCase()
+
+  return rows.filter((row) => {
+    return cols.some((col) => {
+      const cellValue = getCellValue(col, row)
+      return String(cellValue).toLowerCase().includes(term)
+    })
+  })
 }
 
 const statusLabel = (v) =>
@@ -167,6 +202,12 @@ fetchData()
         <q-btn label="Create new post" color="primary" @click="addDialog = true" />
         <q-btn label="Logout" color="primary" @click="logout" />
       </div>
+      <!-- <div class="col-12 q-mt-md">
+        <div class="flex flex-wrap justify-end">
+          <q-input filled v-model="search" label="Search" placeholder="Search" />
+          <q-btn label="Search" color="primary" />
+        </div>
+      </div> -->
       <div class="col-12 q-mt-md">
         <q-table
           flat
@@ -174,12 +215,21 @@ fetchData()
           title="Blog Posts"
           :rows="rows"
           :columns="columns"
+          :loading="loading"
           row-key="title"
-          style="max-width: 800px"
+          :filter="filter"
+          :filter-method="filterByTitle"
         >
+          <template v-slot:top-right>
+            <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+          </template>
           <template v-slot:body="props">
             <q-tr :props="props">
-              <q-td key="title" :props="props">
+              <q-td key="title" :props="props" class="ellipsis" style="max-width: 100px">
                 {{ props.row.title }}
               </q-td>
               <q-td key="content" :props="props" class="ellipsis" style="max-width: 100px">
