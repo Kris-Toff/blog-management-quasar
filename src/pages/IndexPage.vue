@@ -22,14 +22,14 @@ fetchData()
 
 <template>
   <q-page class="flex content-start justify-center">
-    <div class="row">
+    <div class="row q-pb-xl">
       <div class="col-12">
         <h4>Posts</h4>
       </div>
       <div class="col-12 q-gutter-md">
         <q-card
           class="my-card bg-primary text-white"
-          style="min-width: 400px"
+          style="min-width: 400px; max-width: 400px"
           v-for="post in posts"
           :key="post.id"
         >
